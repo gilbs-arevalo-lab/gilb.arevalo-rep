@@ -1,13 +1,27 @@
 ---
 import Base from '../layouts/Base.astro';
+import sharp from 'sharp';
 import { getProjects, img, year, CATEGORIES, SITE } from '../lib/site';
+
+/** True when the uploaded file is wider than it is tall. Read at build time. */
+async function isLandscape(src: string): Promise<boolean> {
+  if (/^https?:/.test(src)) return false;
+  try {
+    const { width = 0, height = 0, orientation = 1 } = await sharp(`public${src}`).metadata();
+    // EXIF orientations 5–8 are rotated 90°, so width and height swap.
+    return orientation >= 5 ? height > width : width > height;
+  } catch {
+    return false;
+  }
+}
 
 const projects = await getProjects();
 const featured = projects.filter((p) => p.data.featured);
 const source = featured.length ? featured : projects;
 
-const photos = source.flatMap((p) =>
-  p.data.photos.map((ph) => ({
+const photos = await Promise.all(source.flatMap((p) =>
+  p.data.photos.map(async (ph) => ({
+    landscape: await isLandscape(ph.image),
     thumb: img(ph.image, 720),
     full: img(ph.image, 2000),
     alt: ph.alt || p.data.title,
@@ -15,7 +29,7 @@ const photos = source.flatMap((p) =>
     sub: [CATEGORIES[p.data.category], p.data.location, year(p.data.date)].filter(Boolean).join(' · '),
     href: `/projects/${p.id}`,
   })),
-);
+));
 ---
 
 <Base footer={false} solidHeader={false}>
@@ -74,6 +88,10 @@ const photos = source.flatMap((p) =>
     will-change: transform;
   }
   .canvas :global(.tile-inner) {
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    background: var(--surface);
     opacity: 0;
     transform: scale(0.94);
     transition: opacity 1s var(--ease), transform 1.2s var(--ease);
@@ -84,8 +102,8 @@ const photos = source.flatMap((p) =>
   }
   .canvas :global(.tile img) {
     width: 100%;
-    height: auto;
-    background: var(--surface);
+    height: 100%;
+    object-fit: cover;
     pointer-events: none;
     -webkit-user-drag: none;
   }
@@ -162,8 +180,7 @@ const photos = source.flatMap((p) =>
 <script>
   import type { LightboxItem } from '../scripts/lightbox.ts';
 
-  type Photo = LightboxItem & { thumb: string };
-
+  type Photo = LightboxItem & { thumb: string; landscape: boolean };
   const canvas = document.getElementById('canvas')!;
   const world = canvas.querySelector<HTMLElement>('.canvas-world')!;
   const hint = document.querySelector<HTMLElement>('.canvas-hint');
@@ -173,64 +190,96 @@ const photos = source.flatMap((p) =>
   const touch = matchMedia('(hover: none)').matches;
   const EASE = reduced ? 1 : 0.075; // lower = more lag behind the pointer
 
-  // Shuffle once per visit.
-  const order = photos.map((_, i) => i);
-  for (let i = order.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [order[i], order[j]] = [order[j], order[i]];
-  }
-
-  interface Tile { el: HTMLElement; img: HTMLImageElement; bx: number; by: number; w: number; photo: number }
+  // Layout: evenly spaced columns of 4:5 (vertical) and 5:4 (horizontal) frames,
+  // so every photo has the same gap on all sides. Each column wraps on its own.
+  interface Tile { el: HTMLElement; img: HTMLImageElement; col: number; y: number; h: number; photo: number }
+  interface Column { x: number; height: number }
   let tiles: Tile[] = [];
-  let cellW = 0;
-  let cellH = 0;
-  let TW = 0;
-  let TH = 0;
+  let columns: Column[] = [];
+  let W = 0; // column (photo) width
+  let G = 0; // gap between photos
+  let TW = 0; // total width of all columns
 
   const mod = (n: number, m: number) => ((n % m) + m) % m;
+
+  function makeTile(photo: number, w: number, h: number) {
+    const el = document.createElement('div');
+    el.className = 'tile';
+    el.dataset.cursor = 'View';
+    el.dataset.photo = String(photo);
+    el.style.width = `${w}px`;
+    el.style.height = `${h}px`;
+    const inner = document.createElement('div');
+    inner.className = 'tile-inner';
+    inner.style.transitionDelay = `${Math.random() * 0.6}s`;
+    const im = document.createElement('img');
+    im.className = 'bw';
+    im.src = photos[photo].thumb;
+    im.alt = photos[photo].alt;
+    im.decoding = 'async';
+    im.draggable = false;
+    inner.appendChild(im);
+    el.appendChild(inner);
+    world.appendChild(el);
+    return { el, img: im };
+  }
 
   function build() {
     world.textContent = '';
     tiles = [];
+    columns = [];
     const vw = innerWidth;
     const vh = innerHeight;
-    cellW = vw < 700 ? vw * 0.56 : Math.max(240, Math.min(400, vw * 0.22));
-    cellH = cellW * 1.3;
-    let cols = Math.ceil(vw / cellW) + 2;
-    let rows = Math.ceil(vh / cellH) + 2;
-    // Make the tile big enough that every photo appears at least once.
-    while (cols * rows < photos.length) cols++;
-    TW = cols * cellW;
-    TH = rows * cellH;
+    W = vw < 700 ? vw * 0.4 : Math.max(180, Math.min(280, vw * 0.15));
+    G = Math.round(Math.max(14, W * 0.11));
+    const tallest = W * 1.25;
 
-    let k = 0;
-    for (let r = 0; r < rows; r++) {
-      for (let c = 0; c < cols; c++) {
-        const photo = order[k++ % order.length];
-        const w = cellW * (0.52 + Math.random() * 0.2);
-        const el = document.createElement('div');
-        el.className = 'tile';
-        el.dataset.cursor = 'View';
-        el.dataset.photo = String(photo);
-        el.style.width = `${w}px`;
-        const inner = document.createElement('div');
-        inner.className = 'tile-inner';
-        inner.style.transitionDelay = `${Math.random() * 0.6}s`;
-        const im = document.createElement('img');
-        im.className = 'bw';
-        im.src = photos[photo].thumb;
-        im.alt = photos[photo].alt;
-        im.decoding = 'async';
-        im.draggable = false;
-        inner.appendChild(im);
-        el.appendChild(inner);
-        world.appendChild(el);
-        // Odd columns are offset vertically for a scattered, staggered look.
-        const bx = c * cellW + Math.random() * (cellW - w);
-        const by = r * cellH + (c % 2 ? cellH * 0.35 : 0) + Math.random() * cellH * 0.12;
-        tiles.push({ el, img: im, bx, by, w, photo });
+    let cols = Math.ceil(vw / (W + G)) + 2;
+    // Each column must be taller than the screen plus one photo so wrapping is never visible.
+    const minColH = vh + 2 * (tallest + G);
+    const perCol = Math.ceil(minColH / (W + G)); // rough count, assuming mixed orientations
+    // Make sure every photo appears at least once.
+    while (cols * perCol < photos.length) cols++;
+    TW = cols * (W + G);
+
+    // Pick photos so each appears once before any repeats, and a repeat goes in the
+    // column farthest from its other copies (columns wrap around), so the same photo
+    // is rarely on screen twice.
+    const used = new Array(photos.length).fill(0);
+    const cols0: number[][] = photos.map(() => []); // columns each photo is already in
+    const dist = (a: number, b: number) => Math.min(mod(a - b, cols), mod(b - a, cols));
+    const pick = (c: number) => {
+      let best: number[] = [];
+      let bestScore = -Infinity;
+      photos.forEach((_, i) => {
+        const near = cols0[i].length ? Math.min(...cols0[i].map((x) => dist(x, c))) : cols;
+        if (near === 0) return; // never twice in one column
+        const score = near * 100 - used[i];
+        if (score > bestScore) { bestScore = score; best = [i]; }
+        else if (score === bestScore) best.push(i);
+      });
+      if (!best.length) best = photos.map((_, i) => i);
+      const photo = best[Math.floor(Math.random() * best.length)];
+      used[photo]++;
+      cols0[photo].push(c);
+      return photo;
+    };
+
+    for (let c = 0; c < cols; c++) {
+      let y = 0;
+      const col: Column = { x: c * (W + G), height: 0 };
+      while (y < minColH || (c === cols - 1 && used.some((n) => n === 0))) {
+        const photo = pick(c);
+        const h = photos[photo].landscape ? W * 0.8 : W * 1.25;
+        const { el, img } = makeTile(photo, W, h);
+        tiles.push({ el, img, col: c, y, h, photo });
+        y += h + G;
       }
+      col.height = y;
+      columns.push(col);
     }
+    // Stagger columns so their rows don't line up.
+    for (const t of tiles) t.y += (t.col % 2 ? 0.45 : 0.1) * W;
     requestAnimationFrame(() => tiles.forEach((t) => t.el.classList.add('in')));
   }
 
@@ -242,14 +291,16 @@ const photos = source.flatMap((p) =>
     cx += (tx - cx) * EASE;
     cy += (ty - cy) * EASE;
     const vw = innerWidth, vh = innerHeight;
+    const pad = W * 1.25 + G;
     for (const t of tiles) {
-      const x = mod(t.bx + cx, TW) - cellW;
-      const y = mod(t.by + cy, TH) - cellH;
+      const col = columns[t.col];
+      const x = mod(col.x + cx, TW) - (W + G);
+      const y = mod(t.y + cy, col.height) - pad;
       t.el.style.transform = `translate3d(${x}px, ${y}px, 0)`;
       if (touch) {
         // No hover on touch screens: photos near the centre turn to colour.
-        const dx = x + t.w / 2 - vw / 2;
-        const dy = y + t.w * 0.6 - vh / 2;
+        const dx = x + W / 2 - vw / 2;
+        const dy = y + t.h / 2 - vh / 2;
         t.img.classList.toggle('is-color', Math.hypot(dx, dy) < Math.min(vw, vh) * 0.28);
       }
     }
@@ -357,7 +408,7 @@ const photos = source.flatMap((p) =>
     build();
     // Start centred on the middle of the tile.
     tx = cx = -TW / 2 + innerWidth / 2;
-    ty = cy = -TH / 2 + innerHeight / 2;
+    ty = cy = 0;
     frame();
   }
 </script>

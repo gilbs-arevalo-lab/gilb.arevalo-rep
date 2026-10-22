@@ -44,7 +44,7 @@ To use the admin panel locally, run `npm run cms` in a second terminal and open 
 
 "Show on Selected Work" controls whether the project's photos appear on the home canvas.
 
-Photos are stored in `public/uploads/`. On Netlify they're automatically resized and served as WebP/AVIF through the Netlify Image CDN. Upload high-quality JPEGs, ideally around 2000–2500 px on the long side.
+Photos are stored in `public/uploads/`. On Netlify they're automatically resized and served as WebP/AVIF through the Netlify Image CDN. Upload high-quality JPEGs, ideally around 2000–2500 px on the long side. On the Selected Work canvas every photo is shown as 4:5 (vertical) or 5:4 (horizontal), depending on its shape, so photos cropped to those ratios display uncropped.
 
 ## Replacing the placeholder photos
 
