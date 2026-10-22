@@ -8,7 +8,9 @@ cover: /uploads/_um35051.jpg
 photos:
   - image: /uploads/_um35051.jpg
   - image: /uploads/_um34877.jpg
-    alt: Building
+    alt: Reflection
   - image: /uploads/_um35364.jpg
+    alt: Modern Building
   - image: /uploads/_um35331.jpg
+    alt: Building
 ---
