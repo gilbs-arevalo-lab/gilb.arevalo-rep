@@ -13,4 +13,8 @@ photos:
     alt: Modern Building
   - image: /uploads/_um35331.jpg
     alt: Building
+  - image: /uploads/_um35291.jpg
+    alt: Sunset and cyclist
+  - image: /uploads/_um35120.jpg
+    alt: Senior Cyclist
 ---
