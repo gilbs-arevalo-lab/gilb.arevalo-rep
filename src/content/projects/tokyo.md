@@ -9,4 +9,5 @@ photos:
   - image: /uploads/_um35051.jpg
   - image: /uploads/_um34877.jpg
     alt: Building
+  - image: /uploads/_um35364.jpg
 ---
