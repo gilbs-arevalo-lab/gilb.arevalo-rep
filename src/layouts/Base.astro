@@ -120,6 +120,11 @@ const ogImage = new URL(image, Astro.site).toString();
 
     <div class="cursor" aria-hidden="true"></div>
 
+    <div class="guard" role="status" aria-live="polite">
+      <strong>© Gilbert Arevalo</strong>
+      <span>These photos aren't free to take. Want to use one? <a href="/contact">Let's talk →</a></span>
+    </div>
+
     <script>
       import '../scripts/ui.ts';
       import '../scripts/lightbox.ts';

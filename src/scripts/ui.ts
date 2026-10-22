@@ -57,3 +57,43 @@ if (matchMedia('(hover: none)').matches && 'IntersectionObserver' in window) {
     if (!el.closest('.canvas')) io.observe(el);
   });
 }
+
+// Photo protection: no right-click menu, drag-to-save or long-press save on photos.
+// A small speech bubble explains why instead. (Text and links keep their normal menu.)
+const PHOTO = 'img, .tile, .shot, .card-img, .portrait, .lb-stage, .preview';
+const guard = document.querySelector<HTMLElement>('.guard');
+let guardTimer: number | undefined;
+
+const hideGuard = () => guard?.classList.remove('show');
+
+document.addEventListener('contextmenu', (e) => {
+  const target = e.target as Element;
+  if (!target.closest(PHOTO)) return;
+  e.preventDefault();
+  if (!guard) return;
+  // Place the bubble above the pointer, kept inside the screen.
+  guard.classList.remove('show');
+  guard.style.left = '0px';
+  guard.style.top = '0px';
+  const { width, height } = guard.getBoundingClientRect();
+  const x = Math.min(Math.max(12, e.clientX - width / 2), innerWidth - width - 12);
+  const above = e.clientY - height - 18;
+  const y = above > 12 ? above : e.clientY + 18;
+  guard.style.left = `${x}px`;
+  guard.style.top = `${y}px`;
+  guard.style.setProperty('--tail', `${Math.min(Math.max(16, e.clientX - x), width - 16)}px`);
+  guard.classList.toggle('below', above <= 12);
+  void guard.offsetWidth; // restart the pop-in animation
+  guard.classList.add('show');
+  clearTimeout(guardTimer);
+  guardTimer = window.setTimeout(hideGuard, 3200);
+});
+
+document.addEventListener('dragstart', (e) => {
+  if ((e.target as Element).closest?.(PHOTO)) e.preventDefault();
+});
+document.addEventListener('pointerdown', (e) => {
+  if (!(e.target as Element).closest('.guard')) hideGuard();
+});
+addEventListener('scroll', hideGuard, { passive: true });
+addEventListener('keydown', (e) => e.key === 'Escape' && hideGuard());
