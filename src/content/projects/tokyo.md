@@ -7,4 +7,6 @@ featured: true
 cover: /uploads/_um35051.jpg
 photos:
   - image: /uploads/_um35051.jpg
+  - image: /uploads/_um34877.jpg
+    alt: Building
 ---
