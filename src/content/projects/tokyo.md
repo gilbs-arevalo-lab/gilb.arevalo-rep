@@ -17,4 +17,5 @@ photos:
     alt: Sunset and cyclist
   - image: /uploads/_um35120.jpg
     alt: Senior Cyclist
+  - image: /uploads/_um35091.jpg
 ---
