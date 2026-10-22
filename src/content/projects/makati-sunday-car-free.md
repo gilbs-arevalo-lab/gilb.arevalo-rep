@@ -7,8 +7,13 @@ featured: true
 cover: /uploads/ig_sep-27-2026_moa_26_134.jpg
 photos:
   - image: /uploads/ig_sep-27-2026_moa_26_3.jpg
+    alt: cyclist
   - image: /uploads/ig_sep-27-2026_moa_26_4.jpg
+    alt: cyclist 2
   - image: /uploads/ig_sep-27-2026_moa_26_117.jpg
+    alt: Runner
   - image: /uploads/ig_sep-27-2026_moa_26.jpg
+    alt: Lone Rider
   - image: /uploads/ig_sep-27-2026_moa_26_134.jpg
+    alt: Fading
 ---
