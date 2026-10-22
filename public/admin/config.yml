@@ -14,8 +14,8 @@ backend:
 # Lets you use /admin on your computer with `npm run cms` + `npm run dev` (no login needed).
 local_backend: true
 
-site_url: https://gilbsarevalo.netlify.app
-display_url: https://gilbsarevalo.netlify.app
+site_url: https://gilbs-arevalo.netlify.app
+display_url: https://gilbs-arevalo.netlify.app
 logo_url: /favicon.svg
 
 media_folder: public/uploads
