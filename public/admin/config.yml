@@ -58,7 +58,7 @@ collections:
         time_format: false
       - { label: Client, name: client, widget: string, required: false, hint: 'Optional, for commissioned work' }
       - { label: Show on Selected Work (home page), name: featured, widget: boolean, default: true }
-      - { label: Cover photo, name: cover, widget: image, hint: 'Shown on the All Projects page' }
+      - { label: Cover photo, name: cover, widget: ga-image, hint: 'Shown on the All Projects page' }
       - label: Photos
         name: photos
         widget: list
@@ -66,6 +66,6 @@ collections:
         summary: '{{fields.alt}}'
         collapsed: true
         fields:
-          - { label: Photo, name: image, widget: image }
+          - { label: Photo, name: image, widget: ga-image }
           - { label: Description (alt text), name: alt, widget: string, required: false, hint: 'Short description for screen readers and search engines' }
       - { label: Story, name: body, widget: markdown, required: false, hint: 'A few sentences about the project' }

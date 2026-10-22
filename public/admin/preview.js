@@ -3,7 +3,8 @@
 // Preview pane for Projects: looks like the real project page, and loads photos reliably.
 // Decap normally loads each preview image through the GitHub API, which can fail and show a
 // broken image. Each photo here tries, in order:
-//   1. Decap's own asset URL (needed for photos just uploaded and not yet published)
+//   0. the local copy of a photo picked in this session (not published yet)
+//   1. Decap's own asset URL
 //   2. the live site
 //   3. GitHub's public raw file URL (published but not yet deployed)
 const LIVE = 'https://gilbs-arevalo.netlify.app';
@@ -11,12 +12,15 @@ const RAW = 'https://raw.githubusercontent.com/gilbs-arevalo-lab/gilb.arevalo-re
 
 const CATEGORIES = { portraits: 'Portraits', streets: 'Streets', travel: 'Travel', events: 'Events' };
 
-function sources(path, getAsset) {
+function sources(path, getAsset, field) {
   if (!path) return [];
   if (/^https?:/.test(path)) return [path];
   const list = [];
+  // A photo picked in this session but not published yet (captured in upload-status.js).
+  const draft = window.__gaDraftPhotos && window.__gaDraftPhotos[window.__gaPhotoKey(path)];
+  if (draft) list.push(draft);
   try {
-    const asset = getAsset(path);
+    const asset = getAsset(path, field);
     if (asset) list.push(String(asset));
   } catch (e) {
     /* fall through to the other sources */
@@ -27,9 +31,15 @@ function sources(path, getAsset) {
 
 // An <img> that moves on to the next source when one fails to load.
 function photo(path, getAsset, alt, className) {
-  const list = sources(path, getAsset);
+  return fallbackImg(sources(path, getAsset), alt, className);
+}
+
+function fallbackImg(list, alt, className) {
   if (!list.length) return null;
   return h('img', {
+    // A new key whenever the sources change, so the <img> starts again from the first source
+    // (Decap first gives a placeholder path for new photos, then the real draft file).
+    key: list.join('|'),
     className,
     alt: alt || '',
     src: list[0],
@@ -77,6 +87,63 @@ const ProjectPreview = createClass({
 });
 
 CMS.registerPreviewTemplate('projects', ProjectPreview);
+
+// Photo field ("ga-image" in config.yml): Decap's own image field, with its thumbnail replaced
+// by one that uses the same fallback sources as the preview, plus the file name.
+const BaseImage = CMS.getWidget('image');
+
+const PhotoControl = createClass({
+  getInitialState() {
+    return { list: [] };
+  },
+  componentDidMount() {
+    this.resolve();
+  },
+  // Decap asks the field whether to re-render (e.g. when a photo is chosen in the media
+  // library). Pass that question on to Decap's own image control inside this wrapper.
+  shouldComponentUpdate(nextProps, nextState) {
+    if (nextState && nextState !== this.state) return true;
+    const inner = this.inner;
+    return inner && inner.shouldComponentUpdate ? inner.shouldComponentUpdate(nextProps) : true;
+  },
+  componentDidUpdate(prev) {
+    if (prev.value !== this.props.value || prev.getAsset !== this.props.getAsset) this.resolve();
+  },
+  resolve() {
+    const { value, getAsset, field } = this.props;
+    const list = typeof value === 'string' ? sources(value, getAsset, field) : [];
+    if (list.join() !== this.state.list.join()) this.setState({ list });
+  },
+  render() {
+    const { value } = this.props;
+    const has = typeof value === 'string' && value;
+    return h(
+      'div',
+      { className: 'ga-image' + (has ? ' has-value' : '') },
+      has
+        ? h(
+            'div',
+            { className: 'ga-thumb' },
+            fallbackImg(this.state.list, '', 'ga-thumb-img'),
+            h('span', { className: 'ga-thumb-name' }, value.split('/').pop()),
+          )
+        : null,
+      h(BaseImage.control, Object.assign({}, this.props, { ref: (r) => (this.inner = r) })),
+    );
+  },
+});
+
+CMS.registerWidget('ga-image', PhotoControl, BaseImage.preview, BaseImage.schema);
+
+// Hide Decap's own (sometimes broken) thumbnail inside our field; ours is shown above it.
+const adminStyle = document.createElement('style');
+adminStyle.textContent = `
+  .ga-image.has-value div:has(> img[role='presentation']) { display: none; }
+  .ga-thumb { display: flex; align-items: flex-end; gap: 12px; margin: 4px 0 12px; }
+  .ga-thumb-img { width: 150px; height: 110px; object-fit: contain; background: #f1f0ee; border: 1px solid #dfdfe3; border-radius: 5px; }
+  .ga-thumb-name { font-size: 12px; color: #798291; overflow-wrap: anywhere; }
+`;
+document.head.appendChild(adminStyle);
 
 CMS.registerPreviewStyle(
   `
