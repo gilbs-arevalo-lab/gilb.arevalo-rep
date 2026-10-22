@@ -201,7 +201,7 @@ button {
 .logo-mark {
   font-family: var(--font-body);
   font-weight: 700;
-  font-size: 26px;
+  font-size: 34px;
   line-height: 1;
   letter-spacing: -0.06em;
 }
@@ -214,15 +214,18 @@ button {
   display: flex;
   align-items: center;
   gap: clamp(16px, 2.4vw, 36px);
-  font-size: 13px;
+  font-size: 14px;
+  font-weight: 500;
 }
 .nav a {
   position: relative;
   padding: 4px 0;
-  color: var(--muted);
+  color: var(--fg);
   transition: color 0.3s;
 }
-.nav a:hover,
+.nav a:hover {
+  color: var(--accent);
+}
 .nav a[aria-current='page'] {
   color: var(--fg);
 }
@@ -264,7 +267,8 @@ button {
 
 .menu-btn {
   display: none;
-  font-size: 13px;
+  font-size: 14px;
+  font-weight: 500;
 }
 
 .mobile-menu {
@@ -464,4 +468,14 @@ button {
   display: flex;
   align-items: center;
   gap: clamp(20px, 3vw, 40px);
+}
+
+/* Keep the header readable over the photos on the home canvas, without a gradient strip. */
+.logo-mark,
+.nav a,
+.menu-btn {
+  text-shadow: 0 0 2px var(--bg), 0 0 8px var(--bg), 0 0 18px var(--bg);
+}
+.theme-toggle {
+  background: var(--bg);
 }

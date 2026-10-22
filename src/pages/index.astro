@@ -38,8 +38,6 @@ const photos = await Promise.all(source.flatMap((p) =>
   <div class="canvas" id="canvas" tabindex="0" aria-label="Photo gallery. Drag, scroll or use arrow keys to explore.">
     <div class="canvas-world"></div>
   </div>
-  <div class="canvas-fade top" aria-hidden="true"></div>
-  <div class="canvas-fade bottom" aria-hidden="true"></div>
 
   <p class="canvas-hint" aria-hidden="true"><span class="accent">✣</span> Drag to explore</p>
 
@@ -112,23 +110,6 @@ const photos = await Promise.all(source.flatMap((p) =>
       filter: grayscale(0) contrast(1);
       transform: scale(1.03);
     }
-  }
-
-  .canvas-fade {
-    position: fixed;
-    left: 0;
-    right: 0;
-    height: 120px;
-    pointer-events: none;
-    z-index: 1;
-  }
-  .canvas-fade.top {
-    top: 0;
-    background: linear-gradient(var(--bg) 30%, transparent);
-  }
-  .canvas-fade.bottom {
-    bottom: 0;
-    background: linear-gradient(transparent, var(--bg) 70%);
   }
 
   .canvas-hint {
