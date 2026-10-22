@@ -45,13 +45,6 @@ const ogImage = new URL(image, Astro.site).toString();
         try { t = localStorage.getItem('theme'); } catch (e) {}
         if (!t) t = matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
         document.documentElement.dataset.theme = t;
-        // Logo A/B preview: ?logo=a or ?logo=b switches and is remembered while browsing.
-        var l = new URLSearchParams(location.search).get('logo');
-        try {
-          if (l === 'a' || l === 'b') localStorage.setItem('logo', l);
-          else l = localStorage.getItem('logo');
-        } catch (e) {}
-        document.documentElement.dataset.logo = l === 'b' ? 'b' : 'a';
       })();
     </script>
     <link rel="preload" href="/fonts/BeVietnamPro-Regular.woff2" as="font" type="font/woff2" crossorigin />

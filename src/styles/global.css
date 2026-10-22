@@ -180,10 +180,10 @@ button {
   inset: 0 0 auto 0;
   height: var(--header-h);
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: space-between;
   gap: 24px;
-  padding: 0 var(--gutter);
+  padding: 20px var(--gutter) 0;
   z-index: 50;
   pointer-events: none;
 }
@@ -201,30 +201,13 @@ button {
 .logo-svg {
   display: block;
   width: auto;
+  height: 44px;
   color: var(--fg);
-  filter: drop-shadow(0 0 2px var(--bg)) drop-shadow(0 0 8px var(--bg));
   transition: color 0.5s var(--ease);
 }
-.logo-a {
-  height: 44px;
-}
-.logo-b {
-  height: 38px;
-}
-/* Variant A shows by default; B only when <html data-logo="b">. */
-.logo-b,
-:root[data-logo='b'] .logo-a {
-  display: none;
-}
-:root[data-logo='b'] .logo-b {
-  display: block;
-}
 @media (max-width: 760px) {
-  .logo-a {
+  .logo-svg {
     height: 36px;
-  }
-  .logo-b {
-    height: 32px;
   }
 }
 
@@ -486,6 +469,13 @@ button {
   display: flex;
   align-items: center;
   gap: clamp(20px, 3vw, 40px);
+  /* Pull the menu up so the tops of its letters line up with the top of the logo. */
+  margin-top: -9px;
+}
+@media (max-width: 760px) {
+  .header-right {
+    margin-top: -6px;
+  }
 }
 
 /* Keep the header readable over the photos on the home canvas, without a gradient strip. */
