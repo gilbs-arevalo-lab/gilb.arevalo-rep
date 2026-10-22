@@ -46,10 +46,12 @@ const ogImage = new URL(image, Astro.site).toString();
         document.documentElement.dataset.theme = t;
       })();
     </script>
+    <link rel="preload" href="/fonts/BeVietnamPro-Regular.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href="/fonts/BeVietnamPro-Bold.woff2" as="font" type="font/woff2" crossorigin />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
-      href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter:wght@400;500&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&display=swap"
       rel="stylesheet"
     />
     <script type="application/ld+json" set:html={JSON.stringify({
@@ -68,7 +70,6 @@ const ogImage = new URL(image, Astro.site).toString();
     <header class:list={['site-header', { solid: solidHeader }]}>
       <a href="/" class="logo" aria-label={`${SITE.fullName}, home`}>
         <span class="logo-mark">G<i>A</i></span>
-        <span class="logo-name">gilbs<b>.</b>arevalo</span>
       </a>
       <div class="header-right">
         <nav class="nav" aria-label="Main">

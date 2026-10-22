@@ -1,3 +1,26 @@
+/* ---------- Fonts ---------- */
+@font-face {
+  font-family: 'Be Vietnam Pro';
+  src: url('/fonts/BeVietnamPro-Regular.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Be Vietnam Pro';
+  src: url('/fonts/BeVietnamPro-Medium.woff2') format('woff2');
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Be Vietnam Pro';
+  src: url('/fonts/BeVietnamPro-Bold.woff2') format('woff2');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
 /* ---------- Tokens ---------- */
 :root {
   --bg: #f5f3ef;
@@ -10,7 +33,7 @@
   --overlay: rgba(245, 243, 239, 0.96);
 
   --font-display: 'Instrument Serif', 'Times New Roman', serif;
-  --font-body: 'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-body: 'Be Vietnam Pro', system-ui, -apple-system, 'Segoe UI', sans-serif;
 
   --gutter: clamp(16px, 3vw, 40px);
   --header-h: 72px;
@@ -173,26 +196,17 @@ button {
 
 .logo {
   display: flex;
-  align-items: baseline;
-  gap: 12px;
+  align-items: center;
 }
 .logo-mark {
-  font-family: var(--font-display);
-  font-size: 30px;
+  font-family: var(--font-body);
+  font-weight: 700;
+  font-size: 26px;
   line-height: 1;
-  letter-spacing: -0.02em;
+  letter-spacing: -0.06em;
 }
 .logo-mark i {
   font-style: normal;
-  color: var(--accent);
-}
-.logo-name {
-  font-size: 13px;
-  letter-spacing: 0.02em;
-  color: var(--muted);
-}
-.logo-name b {
-  font-weight: 400;
   color: var(--accent);
 }
 
@@ -281,8 +295,7 @@ button {
 }
 
 @media (max-width: 760px) {
-  .nav a,
-  .logo-name {
+  .nav a {
     display: none;
   }
   .menu-btn {

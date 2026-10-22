@@ -231,7 +231,7 @@ const photos = await Promise.all(source.flatMap((p) =>
     const vw = innerWidth;
     const vh = innerHeight;
     W = vw < 700 ? vw * 0.4 : Math.max(180, Math.min(280, vw * 0.15));
-    G = Math.round(Math.max(14, W * 0.11));
+    G = vw < 700 ? Math.round(Math.max(14, W * 0.11)) : 32;
     const tallest = W * 1.25;
 
     let cols = Math.ceil(vw / (W + G)) + 2;
