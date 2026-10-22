@@ -1,0 +1,71 @@
+# Admin panel (Decap CMS). Open /admin on the live site and log in with GitHub.
+# Every save commits to the repository and Netlify redeploys the site automatically.
+backend:
+  name: github
+  repo: gilbs-arevalo-lab/gilb.arevalo-rep
+  branch: main
+  commit_messages:
+    create: 'Add project "{{slug}}"'
+    update: 'Update project "{{slug}}"'
+    delete: 'Delete project "{{slug}}"'
+    uploadMedia: 'Upload "{{path}}"'
+    deleteMedia: 'Delete "{{path}}"'
+
+# Lets you use /admin on your computer with `npm run cms` + `npm run dev` (no login needed).
+local_backend: true
+
+site_url: https://gilbsarevalo.netlify.app
+display_url: https://gilbsarevalo.netlify.app
+logo_url: /favicon.svg
+
+media_folder: public/uploads
+public_folder: /uploads
+
+collections:
+  - name: projects
+    label: Projects
+    label_singular: Project
+    description: Each project is one shoot or story. Its photos appear on the project page and, if "Show on Selected Work" is on, on the home page canvas.
+    folder: src/content/projects
+    create: true
+    slug: '{{slug}}'
+    preview_path: projects/{{slug}}
+    summary: '{{title}} · {{category}} · {{year}}'
+    sortable_fields: ['date', 'title', 'category']
+    view_groups:
+      - { label: Category, field: category }
+    view_filters:
+      - { label: Portraits, field: category, pattern: portraits }
+      - { label: Streets, field: category, pattern: streets }
+      - { label: Travel, field: category, pattern: travel }
+      - { label: Events, field: category, pattern: events }
+    fields:
+      - { label: Title, name: title, widget: string }
+      - label: Category
+        name: category
+        widget: select
+        options:
+          - { label: Portraits, value: portraits }
+          - { label: Streets, value: streets }
+          - { label: Travel, value: travel }
+          - { label: Events, value: events }
+      - { label: Location, name: location, widget: string, required: false, hint: 'e.g. Quiapo, Manila' }
+      - label: Date
+        name: date
+        widget: datetime
+        format: YYYY-MM-DD
+        date_format: YYYY-MM-DD
+        time_format: false
+      - { label: Client, name: client, widget: string, required: false, hint: 'Optional, for commissioned work' }
+      - { label: Show on Selected Work (home page), name: featured, widget: boolean, default: true }
+      - { label: Cover photo, name: cover, widget: image, hint: 'Shown on the All Projects page' }
+      - label: Photos
+        name: photos
+        widget: list
+        label_singular: photo
+        summary: '{{fields.alt}}'
+        collapsed: true
+        fields:
+          - { label: Photo, name: image, widget: image }
+          - { label: Description (alt text), name: alt, widget: string, required: false, hint: 'Short description for screen readers and search engines' }
+      - { label: Story, name: body, widget: markdown, required: false, hint: 'A few sentences about the project' }

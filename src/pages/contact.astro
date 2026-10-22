@@ -1,0 +1,284 @@
+---
+import Base from '../layouts/Base.astro';
+import { SITE } from '../lib/site';
+---
+
+<Base title="Contact" description="Book a portrait session, event coverage or a collaboration with Gilbert Arevalo.">
+  <main class="page contact">
+    <section class="side">
+      <p class="eyebrow">Contact</p>
+      <h1 class="display">Let's make something <em class="accent">together.</em></h1>
+      <p class="intro">
+        Portrait sessions, events, travel stories or a creative collaboration. Tell me a little about what you have
+        in mind and I'll get back to you within a couple of days.
+      </p>
+
+      <dl class="details">
+        <div>
+          <dt>Email</dt>
+          <dd><a class="link" href={`mailto:${SITE.email}`}>{SITE.email}</a></dd>
+        </div>
+        <div>
+          <dt>Instagram</dt>
+          <dd><a class="link" href={SITE.instagram} target="_blank" rel="noopener">@{SITE.name}</a></dd>
+        </div>
+        <div>
+          <dt>Based in</dt>
+          <dd>Philippines, available to travel</dd>
+        </div>
+      </dl>
+    </section>
+
+    <form
+      class="form"
+      name="inquiry"
+      method="POST"
+      action="/thank-you"
+      data-netlify="true"
+      netlify-honeypot="bot-field"
+    >
+      <input type="hidden" name="form-name" value="inquiry" />
+      <p class="hp" aria-hidden="true">
+        <label>Leave this empty <input name="bot-field" tabindex="-1" autocomplete="off" /></label>
+      </p>
+
+      <div class="row">
+        <label class="field">
+          <span>Name *</span>
+          <input name="name" type="text" required autocomplete="name" />
+        </label>
+        <label class="field">
+          <span>Email *</span>
+          <input name="email" type="email" required autocomplete="email" />
+        </label>
+      </div>
+
+      <div class="row">
+        <label class="field">
+          <span>Phone</span>
+          <input name="phone" type="tel" autocomplete="tel" />
+        </label>
+        <label class="field">
+          <span>Type of shoot *</span>
+          <select name="service" required>
+            <option value="" disabled selected>Select one</option>
+            <option>Portrait session</option>
+            <option>Event coverage</option>
+            <option>Street / documentary</option>
+            <option>Travel story</option>
+            <option>Other / collaboration</option>
+          </select>
+        </label>
+      </div>
+
+      <div class="row">
+        <label class="field">
+          <span>Preferred date</span>
+          <input name="date" type="date" />
+        </label>
+        <label class="field">
+          <span>Location</span>
+          <input name="location" type="text" placeholder="City or venue" />
+        </label>
+      </div>
+
+      <label class="field">
+        <span>Budget range</span>
+        <input name="budget" type="text" placeholder="Optional" />
+      </label>
+
+      <label class="field">
+        <span>Tell me about it *</span>
+        <textarea name="message" rows="5" required></textarea>
+      </label>
+
+      <div class="submit-row">
+        <button type="submit" class="submit">Send inquiry <span>→</span></button>
+        <p class="status" role="status" aria-live="polite"></p>
+      </div>
+    </form>
+  </main>
+</Base>
+
+<style>
+  .contact {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr);
+    gap: clamp(40px, 7vw, 120px);
+    align-items: start;
+  }
+  .side h1 {
+    font-size: clamp(48px, 7vw, 96px);
+    margin: 8px 0 28px;
+  }
+  .side em {
+    font-style: italic;
+  }
+  .intro {
+    color: var(--muted);
+    max-width: 440px;
+    font-size: 16px;
+  }
+  .details {
+    margin: 48px 0 0;
+    display: grid;
+    gap: 18px;
+  }
+  .details dt {
+    font-size: 10px;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+  .details dd {
+    margin: 2px 0 0;
+    font-size: 15px;
+    overflow-wrap: anywhere;
+  }
+
+  .form {
+    display: grid;
+    gap: 28px;
+    padding-top: 8px;
+  }
+  .row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 28px;
+  }
+  .field {
+    display: grid;
+    gap: 6px;
+  }
+  .field > span {
+    font-size: 10px;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--muted);
+    transition: color 0.3s;
+  }
+  .field:focus-within > span {
+    color: var(--accent);
+  }
+  .field input,
+  .field select,
+  .field textarea {
+    font: inherit;
+    font-size: 16px;
+    color: var(--fg);
+    background: transparent;
+    border: 0;
+    border-bottom: 1px solid var(--line);
+    border-radius: 0;
+    padding: 8px 0 10px;
+    outline: none;
+    transition: border-color 0.3s;
+    width: 100%;
+  }
+  .field select {
+    appearance: none;
+    background-image: linear-gradient(45deg, transparent 50%, currentColor 50%), linear-gradient(135deg, currentColor 50%, transparent 50%);
+    background-position: calc(100% - 10px) 55%, calc(100% - 5px) 55%;
+    background-size: 5px 5px;
+    background-repeat: no-repeat;
+  }
+  .field select option {
+    background: var(--bg);
+    color: var(--fg);
+  }
+  .field textarea {
+    resize: vertical;
+    min-height: 120px;
+  }
+  .field input::placeholder,
+  .field textarea::placeholder {
+    color: var(--muted);
+    opacity: 0.6;
+  }
+  .field input:focus,
+  .field select:focus,
+  .field textarea:focus {
+    border-bottom-color: var(--accent);
+  }
+  .field input[type='date'] {
+    min-height: 43px;
+  }
+
+  .hp {
+    position: absolute;
+    left: -9999px;
+  }
+
+  .submit-row {
+    display: flex;
+    align-items: center;
+    gap: 24px;
+    flex-wrap: wrap;
+  }
+  .submit {
+    background: var(--accent);
+    color: var(--accent-ink);
+    padding: 16px 30px;
+    font-size: 14px;
+    letter-spacing: 0.04em;
+    transition: filter 0.3s, transform 0.3s var(--ease);
+  }
+  .submit span {
+    display: inline-block;
+    transition: transform 0.4s var(--ease);
+  }
+  .submit:hover {
+    filter: brightness(1.08);
+  }
+  .submit:hover span {
+    transform: translateX(4px);
+  }
+  .submit:disabled {
+    opacity: 0.6;
+    cursor: wait;
+  }
+  .status {
+    margin: 0;
+    font-size: 14px;
+    color: var(--muted);
+  }
+  .status.ok {
+    color: var(--accent);
+  }
+
+  @media (max-width: 860px) {
+    .contact,
+    .row {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>
+
+<script>
+  const form = document.querySelector<HTMLFormElement>('form[name="inquiry"]')!;
+  const status = form.querySelector<HTMLElement>('.status')!;
+  const btn = form.querySelector<HTMLButtonElement>('.submit')!;
+
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    btn.disabled = true;
+    status.className = 'status';
+    status.textContent = 'Sending…';
+    try {
+      const body = new URLSearchParams(new FormData(form) as unknown as Record<string, string>).toString();
+      const res = await fetch('/', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body,
+      });
+      if (!res.ok) throw new Error(String(res.status));
+      form.reset();
+      status.classList.add('ok');
+      status.textContent = "Thank you! Your message is on its way. I'll reply soon.";
+    } catch {
+      status.textContent = 'Something went wrong. Please email me directly instead.';
+    } finally {
+      btn.disabled = false;
+    }
+  });
+</script>

@@ -1,0 +1,363 @@
+---
+import Base from '../layouts/Base.astro';
+import { getProjects, img, year, CATEGORIES, SITE } from '../lib/site';
+
+const projects = await getProjects();
+const featured = projects.filter((p) => p.data.featured);
+const source = featured.length ? featured : projects;
+
+const photos = source.flatMap((p) =>
+  p.data.photos.map((ph) => ({
+    thumb: img(ph.image, 720),
+    full: img(ph.image, 2000),
+    alt: ph.alt || p.data.title,
+    title: p.data.title,
+    sub: [CATEGORIES[p.data.category], p.data.location, year(p.data.date)].filter(Boolean).join(' · '),
+    href: `/projects/${p.id}`,
+  })),
+);
+---
+
+<Base footer={false} solidHeader={false}>
+  <h1 class="sr-only">{SITE.fullName}, {SITE.tagline}</h1>
+
+  <div class="canvas" id="canvas" tabindex="0" aria-label="Photo gallery. Drag, scroll or use arrow keys to explore.">
+    <div class="canvas-world"></div>
+  </div>
+  <div class="canvas-fade top" aria-hidden="true"></div>
+  <div class="canvas-fade bottom" aria-hidden="true"></div>
+
+  <p class="canvas-hint" aria-hidden="true"><span class="accent">✣</span> Drag to explore</p>
+
+  <div class="canvas-foot">
+    <span>© {new Date().getFullYear()} {SITE.fullName}</span>
+    <span class="canvas-cats">
+      {Object.entries(CATEGORIES).map(([k, v]) => <a class="link" href={`/projects?category=${k}`}>{v}</a>)}
+    </span>
+  </div>
+
+  <noscript>
+    <p style="padding:120px 24px">Browse the work on the <a href="/projects">All Projects</a> page.</p>
+  </noscript>
+
+  <script type="application/json" id="canvas-data" set:html={JSON.stringify(photos)} />
+</Base>
+
+<style>
+  .canvas {
+    position: fixed;
+    inset: 0;
+    overflow: hidden;
+    cursor: grab;
+    touch-action: none;
+    user-select: none;
+    -webkit-user-select: none;
+    outline: none;
+  }
+  .canvas.dragging {
+    cursor: grabbing;
+  }
+  @media (hover: hover) and (pointer: fine) {
+    .canvas,
+    .canvas.dragging {
+      cursor: none;
+    }
+  }
+  .canvas-world {
+    position: absolute;
+    inset: 0;
+  }
+  .canvas :global(.tile) {
+    position: absolute;
+    top: 0;
+    left: 0;
+    will-change: transform;
+  }
+  .canvas :global(.tile-inner) {
+    opacity: 0;
+    transform: scale(0.94);
+    transition: opacity 1s var(--ease), transform 1.2s var(--ease);
+  }
+  .canvas :global(.tile.in .tile-inner) {
+    opacity: 1;
+    transform: none;
+  }
+  .canvas :global(.tile img) {
+    width: 100%;
+    height: auto;
+    background: var(--surface);
+    pointer-events: none;
+    -webkit-user-drag: none;
+  }
+  @media (hover: hover) {
+    .canvas:not(.dragging) :global(.tile:hover img) {
+      filter: grayscale(0) contrast(1);
+      transform: scale(1.03);
+    }
+  }
+
+  .canvas-fade {
+    position: fixed;
+    left: 0;
+    right: 0;
+    height: 120px;
+    pointer-events: none;
+    z-index: 1;
+  }
+  .canvas-fade.top {
+    top: 0;
+    background: linear-gradient(var(--bg) 30%, transparent);
+  }
+  .canvas-fade.bottom {
+    bottom: 0;
+    background: linear-gradient(transparent, var(--bg) 70%);
+  }
+
+  .canvas-hint {
+    position: fixed;
+    left: 50%;
+    bottom: 28px;
+    transform: translateX(-50%);
+    margin: 0;
+    font-size: 12px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--muted);
+    pointer-events: none;
+    z-index: 2;
+    transition: opacity 0.8s var(--ease);
+  }
+  .canvas-hint.hide {
+    opacity: 0;
+  }
+
+  .canvas-foot {
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    display: flex;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 24px var(--gutter);
+    font-size: 12px;
+    color: var(--muted);
+    pointer-events: none;
+    z-index: 2;
+  }
+  .canvas-foot a {
+    pointer-events: auto;
+  }
+  .canvas-cats {
+    display: flex;
+    gap: 18px;
+  }
+  @media (max-width: 760px) {
+    .canvas-foot {
+      display: none;
+    }
+  }
+</style>
+
+<script>
+  import type { LightboxItem } from '../scripts/lightbox.ts';
+
+  type Photo = LightboxItem & { thumb: string };
+
+  const canvas = document.getElementById('canvas')!;
+  const world = canvas.querySelector<HTMLElement>('.canvas-world')!;
+  const hint = document.querySelector<HTMLElement>('.canvas-hint');
+  const photos: Photo[] = JSON.parse(document.getElementById('canvas-data')!.textContent || '[]');
+
+  const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const touch = matchMedia('(hover: none)').matches;
+  const EASE = reduced ? 1 : 0.075; // lower = more lag behind the pointer
+
+  // Shuffle once per visit.
+  const order = photos.map((_, i) => i);
+  for (let i = order.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [order[i], order[j]] = [order[j], order[i]];
+  }
+
+  interface Tile { el: HTMLElement; img: HTMLImageElement; bx: number; by: number; w: number; photo: number }
+  let tiles: Tile[] = [];
+  let cellW = 0;
+  let cellH = 0;
+  let TW = 0;
+  let TH = 0;
+
+  const mod = (n: number, m: number) => ((n % m) + m) % m;
+
+  function build() {
+    world.textContent = '';
+    tiles = [];
+    const vw = innerWidth;
+    const vh = innerHeight;
+    cellW = vw < 700 ? vw * 0.56 : Math.max(240, Math.min(400, vw * 0.22));
+    cellH = cellW * 1.3;
+    let cols = Math.ceil(vw / cellW) + 2;
+    let rows = Math.ceil(vh / cellH) + 2;
+    // Make the tile big enough that every photo appears at least once.
+    while (cols * rows < photos.length) cols++;
+    TW = cols * cellW;
+    TH = rows * cellH;
+
+    let k = 0;
+    for (let r = 0; r < rows; r++) {
+      for (let c = 0; c < cols; c++) {
+        const photo = order[k++ % order.length];
+        const w = cellW * (0.52 + Math.random() * 0.2);
+        const el = document.createElement('div');
+        el.className = 'tile';
+        el.dataset.cursor = 'View';
+        el.dataset.photo = String(photo);
+        el.style.width = `${w}px`;
+        const inner = document.createElement('div');
+        inner.className = 'tile-inner';
+        inner.style.transitionDelay = `${Math.random() * 0.6}s`;
+        const im = document.createElement('img');
+        im.className = 'bw';
+        im.src = photos[photo].thumb;
+        im.alt = photos[photo].alt;
+        im.decoding = 'async';
+        im.draggable = false;
+        inner.appendChild(im);
+        el.appendChild(inner);
+        world.appendChild(el);
+        // Odd columns are offset vertically for a scattered, staggered look.
+        const bx = c * cellW + Math.random() * (cellW - w);
+        const by = r * cellH + (c % 2 ? cellH * 0.35 : 0) + Math.random() * cellH * 0.12;
+        tiles.push({ el, img: im, bx, by, w, photo });
+      }
+    }
+    requestAnimationFrame(() => tiles.forEach((t) => t.el.classList.add('in')));
+  }
+
+  // Camera
+  let tx = 0, ty = 0; // target
+  let cx = 0, cy = 0; // current (eases toward target)
+
+  function frame() {
+    cx += (tx - cx) * EASE;
+    cy += (ty - cy) * EASE;
+    const vw = innerWidth, vh = innerHeight;
+    for (const t of tiles) {
+      const x = mod(t.bx + cx, TW) - cellW;
+      const y = mod(t.by + cy, TH) - cellH;
+      t.el.style.transform = `translate3d(${x}px, ${y}px, 0)`;
+      if (touch) {
+        // No hover on touch screens: photos near the centre turn to colour.
+        const dx = x + t.w / 2 - vw / 2;
+        const dy = y + t.w * 0.6 - vh / 2;
+        t.img.classList.toggle('is-color', Math.hypot(dx, dy) < Math.min(vw, vh) * 0.28);
+      }
+    }
+    requestAnimationFrame(frame);
+  }
+
+  let hinted = false;
+  const dismissHint = () => {
+    if (hinted) return;
+    hinted = true;
+    hint?.classList.add('hide');
+  };
+
+  // Drag with momentum
+  let down = false, moved = 0, lx = 0, ly = 0, vx = 0, vy = 0, lt = 0;
+
+  canvas.addEventListener('pointerdown', (e) => {
+    if (e.button !== 0) return;
+    down = true;
+    moved = 0;
+    lx = e.clientX; ly = e.clientY; lt = performance.now();
+    vx = vy = 0;
+    canvas.setPointerCapture(e.pointerId);
+  });
+
+  canvas.addEventListener('pointermove', (e) => {
+    if (!down) return;
+    const dx = e.clientX - lx, dy = e.clientY - ly;
+    const now = performance.now();
+    const dt = Math.max(1, now - lt);
+    vx = vx * 0.6 + (dx / dt) * 0.4;
+    vy = vy * 0.6 + (dy / dt) * 0.4;
+    lx = e.clientX; ly = e.clientY; lt = now;
+    tx += dx * 1.2;
+    ty += dy * 1.2;
+    moved += Math.abs(dx) + Math.abs(dy);
+    if (moved > 6) {
+      canvas.classList.add('dragging');
+      dismissHint();
+    }
+  });
+
+  const end = (e: PointerEvent) => {
+    if (!down) return;
+    down = false;
+    canvas.classList.remove('dragging');
+    if (moved > 6) {
+      // Fling
+      tx += vx * 260;
+      ty += vy * 260;
+      return;
+    }
+    // A click without dragging opens the photo.
+    const hit = document.elementsFromPoint(e.clientX, e.clientY).find((el) => el.classList.contains('tile')) as HTMLElement | undefined;
+    if (hit) openAt(Number(hit.dataset.photo));
+  };
+  canvas.addEventListener('pointerup', end);
+  canvas.addEventListener('pointercancel', () => { down = false; canvas.classList.remove('dragging'); });
+
+  canvas.addEventListener('wheel', (e) => {
+    e.preventDefault();
+    tx -= e.deltaX;
+    ty -= e.deltaY;
+    dismissHint();
+  }, { passive: false });
+
+  canvas.addEventListener('keydown', (e) => {
+    const step = 160;
+    if (e.key === 'ArrowLeft') tx += step;
+    else if (e.key === 'ArrowRight') tx -= step;
+    else if (e.key === 'ArrowUp') ty += step;
+    else if (e.key === 'ArrowDown') ty -= step;
+    else if (e.key === 'Enter') {
+      // Open the photo closest to the centre.
+      let best: Tile | undefined, bd = Infinity;
+      for (const t of tiles) {
+        const r = t.el.getBoundingClientRect();
+        const d = Math.hypot(r.left + r.width / 2 - innerWidth / 2, r.top + r.height / 2 - innerHeight / 2);
+        if (d < bd) { bd = d; best = t; }
+      }
+      if (best) openAt(best.photo);
+      return;
+    } else return;
+    e.preventDefault();
+    dismissHint();
+  });
+
+  function openAt(i: number) {
+    window.__lightbox?.open(photos, i);
+  }
+
+  let rt: number | undefined;
+  let lastW = innerWidth;
+  addEventListener('resize', () => {
+    clearTimeout(rt);
+    rt = window.setTimeout(() => {
+      // Ignore height-only changes (mobile URL bar showing/hiding).
+      if (Math.abs(innerWidth - lastW) < 2) return;
+      lastW = innerWidth;
+      build();
+    }, 200);
+  });
+
+  if (photos.length) {
+    build();
+    // Start centred on the middle of the tile.
+    tx = cx = -TW / 2 + innerWidth / 2;
+    ty = cy = -TH / 2 + innerHeight / 2;
+    frame();
+  }
+</script>

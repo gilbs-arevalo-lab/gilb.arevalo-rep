@@ -1,0 +1,22 @@
+---
+import Base from '../layouts/Base.astro';
+---
+
+<Base title="Thank you">
+  <main class="page done">
+    <p class="eyebrow">Message sent</p>
+    <h1 class="display">Thank you<span class="accent">.</span></h1>
+    <p>Your inquiry is on its way. I'll get back to you soon.</p>
+    <a href="/" class="link">← Back to the work</a>
+  </main>
+</Base>
+
+<style>
+  .done h1 {
+    font-size: clamp(56px, 10vw, 140px);
+    margin: 8px 0 24px;
+  }
+  .done p {
+    color: var(--muted);
+  }
+</style>

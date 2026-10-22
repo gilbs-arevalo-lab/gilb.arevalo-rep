@@ -1,0 +1,190 @@
+---
+import Base from '../layouts/Base.astro';
+import { img } from '../lib/site';
+
+const interests = [
+  { name: 'Portraits', line: 'People up close, unposed and honest.' },
+  { name: 'Streets', line: 'Everyday life, exactly as it happens.' },
+  { name: 'Travel', line: 'Places seen slowly, often from the saddle.' },
+  { name: 'Events', line: 'Moments shared with a crowd.' },
+];
+
+const rides = [
+  { place: 'Baguio', region: 'Benguet', href: '/projects/baguio-by-bike' },
+  { place: 'Laguna', region: 'Laguna de Bay loop', href: '/projects/laguna-loop' },
+  { place: 'Cavite', region: 'Ternate coastline', href: '/projects/cavite-coastline' },
+];
+---
+
+<Base title="About" description="Gilbert Arevalo is a Philippines-based photographer and cyclist who photographs people, streets and the road ahead.">
+  <main class="page about">
+    <figure class="portrait bw-host">
+      <img class="bw" src={img('/uploads/about-portrait.jpg', 1000)} alt="Portrait of Gilbert Arevalo" />
+      <figcaption class="eyebrow">Gilbert Arevalo, Philippines</figcaption>
+    </figure>
+
+    <article class="copy">
+      <p class="eyebrow">About</p>
+      <h1 class="display">Hi, I'm Gilbert<span class="accent">.</span></h1>
+
+      <p class="lead">
+        I'm a photographer based in the Philippines, and I'm drawn to people: their faces, their gestures,
+        and the quiet in-between moments that make a portrait feel honest.
+      </p>
+
+      <p>
+        I'm still early in my journey with photography. There are no awards or big titles here, just a real love
+        for the craft and for the people I meet through it. I shoot because I enjoy it, and every session teaches
+        me something new.
+      </p>
+
+      <h2 class="eyebrow section">On the road</h2>
+      <p>
+        When I'm not behind the camera, I'm on my bike. Like most cyclists, I live for the long ride, and my camera
+        always comes along. I stop for the light, the roadside towns and the strangers who make each trip one to remember.
+      </p>
+
+      <ul class="rides">
+        {
+          rides.map((r) => (
+            <li>
+              <a href={r.href}>
+                <span class="display">{r.place}</span>
+                <span class="ride-sub">{r.region} →</span>
+              </a>
+            </li>
+          ))
+        }
+      </ul>
+
+      <h2 class="eyebrow section">What I love to shoot</h2>
+      <dl class="interests">
+        {
+          interests.map((i) => (
+            <div>
+              <dt>{i.name}</dt>
+              <dd>{i.line}</dd>
+            </div>
+          ))
+        }
+      </dl>
+
+      <div class="cta">
+        <p>Have a portrait session, an event or a collaboration in mind? I'd love to hear about it.</p>
+        <a href="/contact" class="cta-link display">Let's work together <span class="accent">→</span></a>
+      </div>
+    </article>
+  </main>
+</Base>
+
+<style>
+  .about {
+    display: grid;
+    grid-template-columns: minmax(0, 5fr) minmax(0, 6fr);
+    gap: clamp(32px, 6vw, 96px);
+    align-items: start;
+  }
+  .portrait {
+    position: sticky;
+    top: calc(var(--header-h) + 24px);
+    margin: 0;
+  }
+  .portrait img {
+    width: 100%;
+    aspect-ratio: 3 / 4;
+    object-fit: cover;
+    background: var(--surface);
+  }
+  .portrait figcaption {
+    margin-top: 12px;
+  }
+  .copy {
+    max-width: 620px;
+    font-size: 16px;
+  }
+  .copy h1 {
+    font-size: clamp(52px, 8vw, 104px);
+    margin: 8px 0 32px;
+  }
+  .lead {
+    font-family: var(--font-display);
+    font-size: clamp(24px, 2.4vw, 30px);
+    line-height: 1.3;
+    margin: 0 0 24px;
+  }
+  .copy p {
+    color: var(--muted);
+  }
+  .copy .lead {
+    color: var(--fg);
+  }
+  .section {
+    margin: 56px 0 16px;
+    padding-top: 16px;
+    border-top: 1px solid var(--line);
+    font-weight: 400;
+  }
+
+  .rides {
+    list-style: none;
+    padding: 0;
+    margin: 24px 0 0;
+  }
+  .rides a {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    padding: 12px 0;
+    border-bottom: 1px solid var(--line);
+  }
+  .rides .display {
+    font-size: 34px;
+    transition: color 0.3s;
+  }
+  .rides a:hover .display {
+    color: var(--accent);
+  }
+  .ride-sub {
+    font-size: 12px;
+    color: var(--muted);
+  }
+
+  .interests {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px 32px;
+    margin: 0;
+  }
+  .interests dt {
+    font-family: var(--font-display);
+    font-size: 26px;
+  }
+  .interests dd {
+    margin: 0;
+    color: var(--muted);
+    font-size: 14px;
+  }
+
+  .cta {
+    margin-top: 72px;
+    padding: 32px 0;
+    border-top: 1px solid var(--line);
+  }
+  .cta-link {
+    font-size: clamp(36px, 5vw, 60px);
+    transition: color 0.3s;
+  }
+  .cta-link:hover {
+    color: var(--accent);
+  }
+
+  @media (max-width: 860px) {
+    .about {
+      grid-template-columns: 1fr;
+    }
+    .portrait {
+      position: static;
+      max-width: 420px;
+    }
+  }
+</style>
