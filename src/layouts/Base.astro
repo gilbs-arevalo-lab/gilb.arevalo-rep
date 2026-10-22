@@ -1,6 +1,7 @@
 ---
 import '../styles/global.css';
 import { SITE } from '../lib/site';
+import Logo from '../components/Logo.astro';
 
 interface Props {
   title?: string;
@@ -44,6 +45,13 @@ const ogImage = new URL(image, Astro.site).toString();
         try { t = localStorage.getItem('theme'); } catch (e) {}
         if (!t) t = matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
         document.documentElement.dataset.theme = t;
+        // Logo A/B preview: ?logo=a or ?logo=b switches and is remembered while browsing.
+        var l = new URLSearchParams(location.search).get('logo');
+        try {
+          if (l === 'a' || l === 'b') localStorage.setItem('logo', l);
+          else l = localStorage.getItem('logo');
+        } catch (e) {}
+        document.documentElement.dataset.logo = l === 'b' ? 'b' : 'a';
       })();
     </script>
     <link rel="preload" href="/fonts/BeVietnamPro-Regular.woff2" as="font" type="font/woff2" crossorigin />
@@ -69,7 +77,7 @@ const ogImage = new URL(image, Astro.site).toString();
   <body>
     <header class:list={['site-header', { solid: solidHeader }]}>
       <a href="/" class="logo" aria-label={`${SITE.fullName}, home`}>
-        <span class="logo-mark">G<i>A</i></span>
+        <Logo />
       </a>
       <div class="header-right">
         <nav class="nav" aria-label="Main">

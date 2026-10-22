@@ -55,3 +55,12 @@ All current photos are placeholders from picsum.photos. Delete the sample projec
 - Colors and fonts are tokens at the top of `src/styles/global.css`. The accent is `--accent: #D4772C`.
 - Name, email and Instagram are set in `src/lib/site.ts`.
 - To change how slowly the canvas follows the mouse, edit `EASE` in `src/pages/index.astro`. A lower value adds more delay.
+
+## Logo A/B preview
+
+The header can show two logo versions (drawn from the SVGs in `src/assets/logo/`):
+
+- **A**: full logo "Gilbs. Arevalo" with the mark (default)
+- **B**: the mark only
+
+Add `?logo=a` or `?logo=b` to any page address to switch. Your browser remembers the choice while you browse. To lock in a final choice for everyone, set the default in the inline script in `src/layouts/Base.astro` (`l === 'b' ? 'b' : 'a'`).

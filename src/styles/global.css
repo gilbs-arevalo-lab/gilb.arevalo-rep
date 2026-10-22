@@ -198,16 +198,34 @@ button {
   display: flex;
   align-items: center;
 }
-.logo-mark {
-  font-family: var(--font-body);
-  font-weight: 700;
-  font-size: 34px;
-  line-height: 1;
-  letter-spacing: -0.06em;
+.logo-svg {
+  display: block;
+  width: auto;
+  color: var(--fg);
+  filter: drop-shadow(0 0 2px var(--bg)) drop-shadow(0 0 8px var(--bg));
+  transition: color 0.5s var(--ease);
 }
-.logo-mark i {
-  font-style: normal;
-  color: var(--accent);
+.logo-a {
+  height: 44px;
+}
+.logo-b {
+  height: 38px;
+}
+/* Variant A shows by default; B only when <html data-logo="b">. */
+.logo-b,
+:root[data-logo='b'] .logo-a {
+  display: none;
+}
+:root[data-logo='b'] .logo-b {
+  display: block;
+}
+@media (max-width: 760px) {
+  .logo-a {
+    height: 36px;
+  }
+  .logo-b {
+    height: 32px;
+  }
 }
 
 .nav {
@@ -471,7 +489,6 @@ button {
 }
 
 /* Keep the header readable over the photos on the home canvas, without a gradient strip. */
-.logo-mark,
 .nav a,
 .menu-btn {
   text-shadow: 0 0 2px var(--bg), 0 0 8px var(--bg), 0 0 18px var(--bg);
