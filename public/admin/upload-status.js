@@ -68,7 +68,11 @@
     }
     const names = b.paths.map((p) => p.split('/').pop());
     const what = b.photos ? `${b.photos === 1 ? 'Photo' : b.photos + ' photos'} uploaded` : 'Project saved';
-    const detail = (names.length ? names.join(', ') + ' — ' : '') + 'safely saved. The live site updates in about a minute.';
+    const local = /^(localhost|127\.0\.0\.1)$/.test(location.hostname);
+    const where = local
+      ? 'saved to your project files. Refresh the site to see it (nothing is live until you push).'
+      : 'safely saved. The live site updates in about a minute.';
+    const detail = (names.length ? names.join(', ') + ' — ' : '') + where;
     show('done', what + ' ✓', detail, 100);
   }
 

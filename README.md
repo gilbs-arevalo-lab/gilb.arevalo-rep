@@ -14,14 +14,48 @@ Portfolio site for Gilbert Arevalo. Built with [Astro](https://astro.build), hos
 
 The theme toggle (light/dark) follows the system setting on first visit and remembers the choice.
 
-## Run locally
+## Run on your computer
+
+Work on the site locally, then publish everything in one go. Each push to GitHub is one
+Netlify deploy, and the free plan only allows about 20 a month.
+
+### One-time setup
+
+1. Install **Node.js LTS** (version 20 or newer) from https://nodejs.org.
+2. Install **Git** from https://git-scm.com. GitHub Desktop also works.
+3. Download the project:
+   ```bash
+   git clone https://github.com/gilbs-arevalo-lab/gilb.arevalo-rep.git
+   cd gilb.arevalo-rep
+   npm install
+   ```
+
+### Start it
+
+- **Windows:** double-click `start-local.bat`
+- **Mac:** double-click `start-local.command`. The first time, right-click it and choose **Open**.
+- **Any system:** `npm run local`
+
+Then open:
+
+| | |
+|---|---|
+| Website | http://localhost:4321 |
+| Admin | http://localhost:4321/admin (no login) |
+
+Admin changes are saved straight to the files on your computer, and the website updates as
+soon as you refresh. Nothing goes online yet. Press **Ctrl+C** in the terminal window to stop.
+
+### Publish when you're ready
 
 ```bash
-npm install
-npm run dev          # http://localhost:4321
+git add -A
+git commit -m "Describe what changed"
+git push
 ```
 
-To use the admin panel locally, run `npm run cms` in a second terminal and open http://localhost:4321/admin. No login is needed, and changes are written straight to the files.
+Each push is one deploy, and Netlify goes live about a minute later. If you also use the
+online admin at `/admin` on the live site, run `git pull` first so you have its latest changes.
 
 ## Deploy to Netlify (one-time setup)
 
